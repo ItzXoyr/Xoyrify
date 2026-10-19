@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "xoyrify",
+  "version": "${version}",
+  "name": "Xoyrify",
+  "description": "Scarica mod direttamente da Modrinth dentro al gioco, con una HUD completamente personalizzabile.",
+  "authors": [
+    "francesco"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.xoyrify.client.XoyrifyClient"
+    ]
+  },
+  "mixins": [],
+  "depends": {
+    "fabricloader": ">=0.15.11",
+    "fabric-api": "*",
+    "minecraft": "1.20.1",
+    "java": ">=17"
+  }
+}

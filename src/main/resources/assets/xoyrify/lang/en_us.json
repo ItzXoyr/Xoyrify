@@ -1,0 +1,12 @@
+{
+  "key.xoyrify.open_downloader": "Open Mod Downloader",
+  "key.xoyrify.open_hud_editor": "Edit HUD",
+  "key.categories.xoyrify": "Xoyrify",
+  "xoyrify.gui.downloader.title": "Xoyrify - Download Mods",
+  "xoyrify.gui.downloader.search": "Search mods...",
+  "xoyrify.gui.downloader.download": "Download",
+  "xoyrify.gui.downloader.downloaded": "Installed",
+  "xoyrify.gui.downloader.incompatible": "No build for this version",
+  "xoyrify.gui.hud.title": "HUD Editor",
+  "xoyrify.gui.hud.done": "Done"
+}

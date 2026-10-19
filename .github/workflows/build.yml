@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   build:
@@ -25,7 +26,24 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build with Gradle
-        run: ./gradlew build --no-daemon
+        id: gradle_build
+        continue-on-error: true
+        run: ./gradlew build --no-daemon --stacktrace 2>&1 | tee build-output.log
+
+      - name: Report build log on failure
+        if: steps.gradle_build.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tail -n 300 build-output.log > tail.log
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "Build failed - run ${{ github.run_id }}" \
+            --body-file tail.log
+
+      - name: Fail job if build failed
+        if: steps.gradle_build.outcome == 'failure'
+        run: exit 1
 
       - name: Upload built jar
         uses: actions/upload-artifact@v4

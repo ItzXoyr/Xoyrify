@@ -30,15 +30,26 @@ jobs:
         continue-on-error: true
         run: ./gradlew build --no-daemon --stacktrace 2>&1 | tee build-output.log
 
-      - name: Report build log on failure
-        if: steps.gradle_build.outcome == 'failure'
+      - name: List produced files (debug)
+        if: always()
+        run: |
+          echo "--- find build -name '*.jar' ---" > debug.log
+          find build -name '*.jar' 2>&1 >> debug.log || true
+          echo "--- ls -la build/libs ---" >> debug.log
+          ls -la build/libs 2>&1 >> debug.log || true
+
+      - name: Report build log
+        if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          tail -n 300 build-output.log > tail.log
+          cat debug.log > tail.log
+          echo "" >> tail.log
+          echo "--- last 300 lines of gradle output ---" >> tail.log
+          tail -n 300 build-output.log >> tail.log
           gh issue create \
             --repo "${{ github.repository }}" \
-            --title "Build failed - run ${{ github.run_id }}" \
+            --title "Build report - run ${{ github.run_id }}" \
             --body-file tail.log
 
       - name: Fail job if build failed

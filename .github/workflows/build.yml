@@ -28,7 +28,9 @@ jobs:
       - name: Build with Gradle
         id: gradle_build
         continue-on-error: true
-        run: ./gradlew build --no-daemon --stacktrace 2>&1 | tee build-output.log
+        # No --stacktrace: it buries the actual "What went wrong" summary
+        # under thousands of lines of internal Gradle frames.
+        run: ./gradlew build --no-daemon 2>&1 | tee build-output.log
 
       - name: List produced files (debug)
         if: always()
@@ -45,12 +47,29 @@ jobs:
         run: |
           cat debug.log > tail.log
           echo "" >> tail.log
-          echo "--- last 300 lines of gradle output ---" >> tail.log
-          tail -n 300 build-output.log >> tail.log
+
+          if grep -q "FAILURE: Build failed" build-output.log; then
+            echo "--- failure summary (from 'FAILURE: Build failed' onward) ---" >> tail.log
+            awk '/FAILURE: Build failed/{found=1} found' build-output.log >> tail.log
+          fi
+
+          if grep -q "error:" build-output.log; then
+            echo "" >> tail.log
+            echo "--- lines mentioning 'error:' (with 3 lines of context) ---" >> tail.log
+            grep -n -B3 -A3 "error:" build-output.log >> tail.log
+          fi
+
+          echo "" >> tail.log
+          echo "--- last 150 lines of gradle output (fallback) ---" >> tail.log
+          tail -n 150 build-output.log >> tail.log
+
+          # Stay within GitHub's issue body size limit.
+          head -c 60000 tail.log > tail-trimmed.log
+
           gh issue create \
             --repo "${{ github.repository }}" \
             --title "Build report - run ${{ github.run_id }}" \
-            --body-file tail.log
+            --body-file tail-trimmed.log
 
       - name: Fail job if build failed
         if: steps.gradle_build.outcome == 'failure'
